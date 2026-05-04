@@ -3,11 +3,9 @@ using ServerApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Добавляем подключение к PostgreSQL
 builder.Services.AddDbContext<EsportsContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
