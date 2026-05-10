@@ -17,7 +17,10 @@ namespace ServerApi.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Настройка связей для таблицы Team_Player
+            modelBuilder.Entity<Player>().ToTable("players");
+            modelBuilder.Entity<Team>().ToTable("team");
+            modelBuilder.Entity<TeamPlayer>().ToTable("team_player");
+
             modelBuilder.Entity<TeamPlayer>()
                 .HasOne(tp => tp.Team)
                 .WithMany(t => t.TeamPlayers)
