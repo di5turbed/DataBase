@@ -48,7 +48,7 @@ namespace ServerApi.Controllers
                 teams = await query.ToListAsync();
             }
 
-            return Ok(teams.Select(t => new TeamDto { Id = t.Id, Name = t.Name, PlayersCount = t.TeamPlayers.Count }));
+            return Ok(teams.Select(t => new TeamDTO { Id = t.Id, Name = t.Name, PlayersCount = t.TeamPlayers.Count }));
         }
 
         // 2. ДОБАВЛЕНИЕ (Create)
