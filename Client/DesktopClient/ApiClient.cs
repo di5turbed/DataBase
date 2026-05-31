@@ -9,6 +9,13 @@ namespace DesktopClient
         public string Name { get; set; } = string.Empty;
         public int PlayersCount { get; set; }
     }
+    public class PlayerDto
+    {
+        public Guid Id { get; set; }
+        public string Nickname { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+    }
 
     public class ApiClient
     {
@@ -44,7 +51,30 @@ namespace DesktopClient
             }
             return false;
         }
+        public async Task<List<PlayerDto>> GetPlayersAsync(string search = "", bool useSql = false)
+        {
+            try
+            {
+                var url = $"api/players?useSql={useSql}";
+                if (!string.IsNullOrEmpty(search)) url += $"&search={search}";
+                var players = await _httpClient.GetFromJsonAsync<List<PlayerDto>>(url);
+                return players ?? new List<PlayerDto>();
+            }
+            catch { return new List<PlayerDto>(); }
+        }
 
+        public async Task<bool> CreatePlayerAsync(string nick, string first, string last, bool useSql = false)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"api/players?useSql={useSql}",
+                new { Nickname = nick, FirstName = first, LastName = last, Phone = 123456, DateOfBirth = DateTime.UtcNow.AddYears(-20) });
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> DeletePlayerAsync(Guid id, bool useSql = false)
+        {
+            var response = await _httpClient.DeleteAsync($"api/players/{id}?useSql={useSql}");
+            return response.IsSuccessStatusCode;
+        }
         public async Task<List<TeamDto>> GetTeamsAsync(string search = "", bool useSql = false)
         {
             try

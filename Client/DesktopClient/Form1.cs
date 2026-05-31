@@ -6,106 +6,112 @@ namespace DesktopClient
 {
     public partial class Form1 : Form
     {
+        private TabControl _tabControl;
 
-        private DataGridView _dataGridViewTeams;
+        // Элементы вкладки "Команды"
+        private DataGridView _gridTeams;
+        private TextBox _txtTeamSearch, _txtTeamName;
+
+        // Элементы вкладки "Игроки"
+        private DataGridView _gridPlayers;
+        private TextBox _txtPlayerSearch, _txtPlayerNick;
+
+        // Общие настройки
         private CheckBox _chkUseSql;
-        private TextBox _txtSearch;
-        private TextBox _txtTeamName;
-
         private readonly Guid _cs2GameId = Guid.Parse("11111111-1111-1111-1111-000000000001");
 
         public Form1()
         {
             InitializeComponent();
             SetupUI();
-            LoadData();
+            LoadTeamsData();
+            LoadPlayersData();
         }
 
         private void SetupUI()
         {
-            this.Text = "Управление киберспортивным клубом";
-            this.Size = new Size(600, 480);
+            this.Text = "Управление киберспортивным клубом (Многотабличный режим)";
+            this.Size = new Size(650, 500);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            var btnLoad = new Button { Text = "Сбросить / Загрузить", Location = new Point(20, 20), Size = new Size(150, 30) };
-            btnLoad.Click += (s, e) => { _txtSearch.Clear(); LoadData(); };
-            this.Controls.Add(btnLoad);
-
-            _txtSearch = new TextBox { Location = new Point(180, 25), Size = new Size(150, 25) };
-            this.Controls.Add(_txtSearch);
-
-            var btnSearch = new Button { Text = "Поиск", Location = new Point(340, 20), Size = new Size(70, 30) };
-            btnSearch.Click += (s, e) => LoadData();
-            this.Controls.Add(btnSearch);
-
-            _chkUseSql = new CheckBox { Text = "Использовать чистый SQL", Location = new Point(420, 25), Size = new Size(160, 25) };
+            // Глобальный переключатель SQL/ORM
+            _chkUseSql = new CheckBox { Text = "Использовать чистый SQL для ВСЕХ запросов", Location = new Point(20, 10), Size = new Size(300, 25), Font = new Font("Segoe UI", 9, FontStyle.Bold) };
             this.Controls.Add(_chkUseSql);
 
-            _txtTeamName = new TextBox { Location = new Point(20, 75), Size = new Size(150, 25) };
-            this.Controls.Add(_txtTeamName);
+            _tabControl = new TabControl { Location = new Point(10, 40), Size = new Size(610, 400) };
+            this.Controls.Add(_tabControl);
 
-            var btnAdd = new Button { Text = "Добавить", Location = new Point(180, 70), Size = new Size(90, 35) };
-            btnAdd.Click += BtnAdd_Click;
-            this.Controls.Add(btnAdd);
+            // --- ВКЛАДКА 1: КОМАНДЫ ---
+            var tabTeams = new TabPage("Команды");
+            _txtTeamSearch = new TextBox { Location = new Point(10, 15), Size = new Size(150, 25) };
+            var btnTeamSearch = new Button { Text = "Поиск / Сброс", Location = new Point(170, 13), Size = new Size(100, 27) };
+            btnTeamSearch.Click += (s, e) => LoadTeamsData();
 
-            var btnUpdate = new Button { Text = "Изменить (по ID)", Location = new Point(280, 70), Size = new Size(120, 35) };
-            btnUpdate.Click += BtnUpdate_Click;
-            this.Controls.Add(btnUpdate);
+            _txtTeamName = new TextBox { Location = new Point(10, 50), Size = new Size(150, 25) };
+            var btnAddTeam = new Button { Text = "Добавить", Location = new Point(170, 48), Size = new Size(80, 27) };
+            btnAddTeam.Click += BtnAddTeam_Click;
+            var btnDelTeam = new Button { Text = "Удалить", Location = new Point(260, 48), Size = new Size(80, 27), BackColor = Color.LightCoral };
+            btnDelTeam.Click += BtnDeleteTeam_Click;
 
-            var btnDelete = new Button { Text = "Удалить", Location = new Point(410, 70), Size = new Size(90, 35), BackColor = Color.LightCoral };
-            btnDelete.Click += BtnDelete_Click;
-            this.Controls.Add(btnDelete);
+            _gridTeams = new DataGridView { Location = new Point(10, 90), Size = new Size(580, 270), AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect, AllowUserToAddRows = false };
 
-            _dataGridViewTeams = new DataGridView
-            {
-                Location = new Point(20, 120),
-                Size = new Size(540, 300),
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                AllowUserToAddRows = false
-            };
-            this.Controls.Add(_dataGridViewTeams);
+            tabTeams.Controls.AddRange(new Control[] { _txtTeamSearch, btnTeamSearch, _txtTeamName, btnAddTeam, btnDelTeam, _gridTeams });
+            _tabControl.TabPages.Add(tabTeams);
+
+            // --- ВКЛАДКА 2: ИГРОКИ ---
+            var tabPlayers = new TabPage("Игроки");
+            _txtPlayerSearch = new TextBox { Location = new Point(10, 15), Size = new Size(150, 25) };
+            var btnPlayerSearch = new Button { Text = "Поиск / Сброс", Location = new Point(170, 13), Size = new Size(100, 27) };
+            btnPlayerSearch.Click += (s, e) => LoadPlayersData();
+
+            _txtPlayerNick = new TextBox { Location = new Point(10, 50), Size = new Size(150, 25) };
+            var btnAddPlayer = new Button { Text = "Добавить", Location = new Point(170, 48), Size = new Size(80, 27) };
+            btnAddPlayer.Click += BtnAddPlayer_Click;
+            var btnDelPlayer = new Button { Text = "Удалить", Location = new Point(260, 48), Size = new Size(80, 27), BackColor = Color.LightCoral };
+            btnDelPlayer.Click += BtnDeletePlayer_Click;
+
+            _gridPlayers = new DataGridView { Location = new Point(10, 90), Size = new Size(580, 270), AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect, AllowUserToAddRows = false };
+
+            tabPlayers.Controls.AddRange(new Control[] { _txtPlayerSearch, btnPlayerSearch, _txtPlayerNick, btnAddPlayer, btnDelPlayer, _gridPlayers });
+            _tabControl.TabPages.Add(tabPlayers);
         }
 
-        private async void LoadData()
+        // --- ЛОГИКА ДЛЯ КОМАНД ---
+        private async void LoadTeamsData()
         {
-            var teams = await ApiClient.Instance.GetTeamsAsync(_txtSearch.Text, _chkUseSql.Checked);
-            _dataGridViewTeams.DataSource = teams;
-            if (_dataGridViewTeams.Columns["Id"] != null) _dataGridViewTeams.Columns["Id"].Visible = false;
-            if (_dataGridViewTeams.Columns["Name"] != null) _dataGridViewTeams.Columns["Name"].HeaderText = "Название команды";
-            if (_dataGridViewTeams.Columns["PlayersCount"] != null) _dataGridViewTeams.Columns["PlayersCount"].HeaderText = "Кол-во игроков";
+            _gridTeams.DataSource = await ApiClient.Instance.GetTeamsAsync(_txtTeamSearch.Text, _chkUseSql.Checked);
+            if (_gridTeams.Columns["Id"] != null) _gridTeams.Columns["Id"].Visible = false;
         }
 
-        private async void BtnAdd_Click(object sender, EventArgs e)
+        private async void BtnAddTeam_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(_txtTeamName.Text)) return;
-            if (await ApiClient.Instance.CreateTeamAsync(_txtTeamName.Text, _cs2GameId, _chkUseSql.Checked))
-            {
-                _txtTeamName.Clear(); LoadData();
-            }
+            if (await ApiClient.Instance.CreateTeamAsync(_txtTeamName.Text, _cs2GameId, _chkUseSql.Checked)) { _txtTeamName.Clear(); LoadTeamsData(); }
         }
 
-        private async void BtnUpdate_Click(object sender, EventArgs e)
+        private async void BtnDeleteTeam_Click(object sender, EventArgs e)
         {
-            if (_dataGridViewTeams.SelectedRows.Count == 0 || string.IsNullOrWhiteSpace(_txtTeamName.Text)) return;
-            var id = (Guid)_dataGridViewTeams.SelectedRows[0].Cells["Id"].Value;
-
-            if (await ApiClient.Instance.UpdateTeamAsync(id, _txtTeamName.Text, _cs2GameId, _chkUseSql.Checked))
-            {
-                _txtTeamName.Clear(); LoadData();
-            }
+            if (_gridTeams.SelectedRows.Count == 0) return;
+            if (await ApiClient.Instance.DeleteTeamAsync((Guid)_gridTeams.SelectedRows[0].Cells["Id"].Value, _chkUseSql.Checked)) LoadTeamsData();
         }
 
-        private async void BtnDelete_Click(object sender, EventArgs e)
+        // --- ЛОГИКА ДЛЯ ИГРОКОВ ---
+        private async void LoadPlayersData()
         {
-            if (_dataGridViewTeams.SelectedRows.Count == 0) return;
-            var id = (Guid)_dataGridViewTeams.SelectedRows[0].Cells["Id"].Value;
+            _gridPlayers.DataSource = await ApiClient.Instance.GetPlayersAsync(_txtPlayerSearch.Text, _chkUseSql.Checked);
+            if (_gridPlayers.Columns["Id"] != null) _gridPlayers.Columns["Id"].Visible = false;
+        }
 
-            if (await ApiClient.Instance.DeleteTeamAsync(id, _chkUseSql.Checked))
-            {
-                LoadData();
-            }
+        private async void BtnAddPlayer_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(_txtPlayerNick.Text)) return;
+            if (await ApiClient.Instance.CreatePlayerAsync(_txtPlayerNick.Text, "Имя", "Фамилия", _chkUseSql.Checked)) { _txtPlayerNick.Clear(); LoadPlayersData(); }
+        }
+
+        private async void BtnDeletePlayer_Click(object sender, EventArgs e)
+        {
+            if (_gridPlayers.SelectedRows.Count == 0) return;
+            if (await ApiClient.Instance.DeletePlayerAsync((Guid)_gridPlayers.SelectedRows[0].Cells["Id"].Value, _chkUseSql.Checked)) LoadPlayersData();
         }
     }
 }
