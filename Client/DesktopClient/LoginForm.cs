@@ -17,10 +17,9 @@ namespace DesktopClient
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
-            var apiClient = new ApiClient();
-            if (await apiClient.LoginAsync(loginbox.Text, passwordbox.Text))
+            if (await ApiClient.Instance.LoginAsync(loginbox.Text, passwordbox.Text))
             {
-                var mainForm = new Form1(apiClient);
+                var mainForm = new Form1();
                 mainForm.Show();
                 this.Hide();
             }

@@ -6,19 +6,17 @@ namespace DesktopClient
 {
     public partial class Form1 : Form
     {
-        private readonly ApiClient _apiClient;
-        private DataGridView _dataGridViewTeams;
 
+        private DataGridView _dataGridViewTeams;
         private CheckBox _chkUseSql;
         private TextBox _txtSearch;
         private TextBox _txtTeamName;
 
         private readonly Guid _cs2GameId = Guid.Parse("11111111-1111-1111-1111-000000000001");
 
-        public Form1(ApiClient apiClient)
+        public Form1()
         {
             InitializeComponent();
-            _apiClient = apiClient;
             SetupUI();
             LoadData();
         }
@@ -72,7 +70,7 @@ namespace DesktopClient
 
         private async void LoadData()
         {
-            var teams = await _apiClient.GetTeamsAsync(_txtSearch.Text, _chkUseSql.Checked);
+            var teams = await ApiClient.Instance.GetTeamsAsync(_txtSearch.Text, _chkUseSql.Checked);
             _dataGridViewTeams.DataSource = teams;
             if (_dataGridViewTeams.Columns["Id"] != null) _dataGridViewTeams.Columns["Id"].Visible = false;
             if (_dataGridViewTeams.Columns["Name"] != null) _dataGridViewTeams.Columns["Name"].HeaderText = "Название команды";
@@ -82,7 +80,7 @@ namespace DesktopClient
         private async void BtnAdd_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(_txtTeamName.Text)) return;
-            if (await _apiClient.CreateTeamAsync(_txtTeamName.Text, _cs2GameId, _chkUseSql.Checked))
+            if (await ApiClient.Instance.CreateTeamAsync(_txtTeamName.Text, _cs2GameId, _chkUseSql.Checked))
             {
                 _txtTeamName.Clear(); LoadData();
             }
@@ -93,7 +91,7 @@ namespace DesktopClient
             if (_dataGridViewTeams.SelectedRows.Count == 0 || string.IsNullOrWhiteSpace(_txtTeamName.Text)) return;
             var id = (Guid)_dataGridViewTeams.SelectedRows[0].Cells["Id"].Value;
 
-            if (await _apiClient.UpdateTeamAsync(id, _txtTeamName.Text, _cs2GameId, _chkUseSql.Checked))
+            if (await ApiClient.Instance.UpdateTeamAsync(id, _txtTeamName.Text, _cs2GameId, _chkUseSql.Checked))
             {
                 _txtTeamName.Clear(); LoadData();
             }
@@ -104,7 +102,7 @@ namespace DesktopClient
             if (_dataGridViewTeams.SelectedRows.Count == 0) return;
             var id = (Guid)_dataGridViewTeams.SelectedRows[0].Cells["Id"].Value;
 
-            if (await _apiClient.DeleteTeamAsync(id, _chkUseSql.Checked))
+            if (await ApiClient.Instance.DeleteTeamAsync(id, _chkUseSql.Checked))
             {
                 LoadData();
             }

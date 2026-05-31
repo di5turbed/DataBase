@@ -12,10 +12,22 @@ namespace DesktopClient
 
     public class ApiClient
     {
+        private static ApiClient? _instance;
+
+        public static ApiClient Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new ApiClient();
+                return _instance;
+            }
+        }
+
         private readonly HttpClient _httpClient;
         private string? _authToken;
 
-        public ApiClient()
+        private ApiClient()
         {
             _httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5007/") };
         }
