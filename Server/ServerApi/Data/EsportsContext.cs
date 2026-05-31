@@ -8,8 +8,8 @@ namespace ServerApi.Data
         public DbSet<Player> Players { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<TeamPlayer> TeamPlayers { get; set; }
-        
-        // Сюда потом добавишь DbSet для Tournament, Match, Hall и т.д.
+
+        public DbSet<User> Users { get; set; }
 
         public EsportsContext(DbContextOptions<EsportsContext> options) : base(options) { }
 
@@ -20,6 +20,7 @@ namespace ServerApi.Data
             modelBuilder.Entity<Player>().ToTable("players");
             modelBuilder.Entity<Team>().ToTable("team");
             modelBuilder.Entity<TeamPlayer>().ToTable("team_player");
+            modelBuilder.Entity<User>().ToTable("users");
 
             modelBuilder.Entity<TeamPlayer>()
                 .HasOne(tp => tp.Team)

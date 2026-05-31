@@ -3,4 +3,11 @@
 GET {{ServerApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### Регистрация админа
+POST http://localhost:5007/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "MySuperPassword123"
+}
