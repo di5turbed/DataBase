@@ -10,11 +10,12 @@ namespace DesktopClient
         private DataGridView _dataGridViewTeams;
         private Button _btnLoadTeams;
 
-        public Form1()
+        public Form1(ApiClient apiClient)
         {
             InitializeComponent();
             _apiClient = new ApiClient();
             SetupUI();
+            _apiClient = apiClient;
         }
 
         private void SetupUI()

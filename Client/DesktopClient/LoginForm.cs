@@ -15,7 +15,7 @@ namespace DesktopClient
             InitializeComponent();
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private async void btnLogin_Click(object sender, EventArgs e)
         {
             var apiClient = new ApiClient();
             if (await apiClient.LoginAsync(loginbox.Text, passwordbox.Text))
