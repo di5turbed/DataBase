@@ -47,14 +47,13 @@ namespace ServerApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 return Unauthorized("Неверный логин или пароль");
             }
 
-            // 3. Если всё верно — выдаем токен
             var token = GenerateJwtToken(user.Username, user.Role);
             return Ok(new { Token = token });
         }

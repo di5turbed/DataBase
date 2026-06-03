@@ -1,19 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ServerApi.Models
 {
     public class User
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        [Column("id")]
+        public Guid Id { get; set; }
 
-        [Required]
-        [MaxLength(50)]
+        [Column("username")]
         public string Username { get; set; } = string.Empty;
 
-        [Required]
+        [Column("password_hash")]
         public string PasswordHash { get; set; } = string.Empty;
 
-        [MaxLength(50)]
-        public string Role { get; set; } = "Admin";
+        [Column("role")]
+        public string Role { get; set; } = string.Empty;
     }
 }
