@@ -8,16 +8,16 @@ namespace ServerApi.Models
         [Column("id")]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Column("start_date")]
-        public DateTime BeginDate { get; set; }
-
-        [Column("end_date")]
-        public DateTime EndDate { get; set; }
-
         [Column("name")]
         public string Name { get; set; } = string.Empty;
 
-        [Column("prizepool")]
-        public int Prizepool { get; set; }
+        [Column("start_time")]
+        public DateTime StartTime { get; set; }
+
+        [Column("end_time")]
+        public DateTime EndTime { get; set; }
+
+        [Column("max_participants")]
+        public int MaxParticipants { get; set; }
     }
 }

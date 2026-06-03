@@ -17,21 +17,18 @@ namespace DesktopClient
         public string LastName { get; set; } = string.Empty;
     }
 
-    public class TournamentDto {
+    public class TournamentDto { 
         public Guid Id { get; set; } 
-        public string Name { get; set; } = ""; 
-        public DateTime BeginDate { get; set; } 
-        public DateTime EndDate { get; set; } 
-        public int Prizepool { get; set; } 
+        public string Name { get; set; } = "";
+        public DateTime StartTime { get; set; } 
+        public DateTime EndTime { get; set; } 
+        public int MaxParticipants { get; set; } 
     }
-    public class ResultDto
-    {   
-        public Guid Id { get; set; }
-        public Guid TeamId { get; set; }
-        public Guid MatchId { get; set; }
-        public int Place { get; set; }
-        public int Points { get; set; }
-        public int PrizeMoney { get; set; }
+    public class ResultDto { 
+        public Guid Id { get; set; } 
+        public Guid WinnerTeam { get; set; } 
+        public Guid TournamentId { get; set; } 
+        public int TotalPrizeMoney { get; set; } 
     }
 
     public class ApiClient
@@ -57,10 +54,17 @@ namespace DesktopClient
             catch { return new List<TournamentDto>(); }
         }
 
-        public async Task<bool> CreateTournamentAsync(string name, int prizepool, bool useSql = false)
+        public async Task<bool> CreateTournamentAsync(string name, int maxParticipants, bool useSql = false)
         {
             var response = await _httpClient.PostAsJsonAsync($"api/tournaments?useSql={useSql}",
-                new { Name = name, BeginDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(7), Prizepool = prizepool });
+                new { Name = name, StartTime = DateTime.UtcNow, EndTime = DateTime.UtcNow.AddDays(7), MaxParticipants = maxParticipants });
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> RecordResultAsync(int totalPrize, Guid winnerTeamId, Guid tournamentId, bool useSql = false)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"api/tournaments/results?useSql={useSql}",
+                new { TotalPrizeMoney = totalPrize, WinnerTeam = winnerTeamId, TournamentId = tournamentId });
             return response.IsSuccessStatusCode;
         }
 
@@ -70,12 +74,6 @@ namespace DesktopClient
             catch { return new List<ResultDto>(); }
         }
 
-        public async Task<bool> RecordResultAsync(int place, int points, int prizeMoney, Guid matchId, Guid teamId, bool useSql = false)
-        {
-            var response = await _httpClient.PostAsJsonAsync($"api/tournaments/results?useSql={useSql}",
-                new { Place = place, Points = points, PrizeMoney = prizeMoney, MatchId = matchId, TeamId = teamId });
-            return response.IsSuccessStatusCode;
-        }
 
         private ApiClient()
         {
