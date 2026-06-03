@@ -13,7 +13,7 @@ namespace ServerApi.Tests
         private DbContextOptions<EsportsContext> GetInMemoryOptions()
         {
             return new DbContextOptionsBuilder<EsportsContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Уникальное имя для каждого теста
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
         }
 
