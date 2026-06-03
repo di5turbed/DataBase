@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using System.Windows.Forms;
+using System.Data;
+using System.Text.Json;
 
 namespace DesktopClient
 {
@@ -59,6 +61,48 @@ namespace DesktopClient
             var response = await _httpClient.PostAsJsonAsync($"api/tournaments?useSql={useSql}",
                 new { Name = name, StartTime = DateTime.UtcNow, EndTime = DateTime.UtcNow.AddDays(7), MaxParticipants = maxParticipants });
             return response.IsSuccessStatusCode;
+        }
+        public async Task<DataTable?> ExecuteRawSqlAsync(string query)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/sql/execute", new { Query = query });
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorMsg = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show($"Ошибка БД:\n{errorMsg}", "Ошибка SQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return null;
+                }
+
+                var jsonString = await response.Content.ReadAsStringAsync();
+                var list = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(jsonString);
+
+                var dt = new DataTable();
+                if (list == null || list.Count == 0) return dt;
+
+                foreach (var key in list[0].Keys)
+                {
+                    dt.Columns.Add(key);
+                }
+
+                foreach (var row in list)
+                {
+                    var dr = dt.NewRow();
+                    foreach (var kvp in row)
+                    {
+                        dr[kvp.Key] = kvp.Value.ToString();
+                    }
+                    dt.Rows.Add(dr);
+                }
+
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка приложения: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<bool> RecordResultAsync(int totalPrize, Guid winnerTeamId, Guid tournamentId, bool useSql = false)

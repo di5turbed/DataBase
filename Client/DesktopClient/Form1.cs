@@ -7,7 +7,11 @@ namespace DesktopClient
     public partial class Form1 : Form
     {
         private TabControl _tabControl;
+
+        // Панель SQL
         private CheckBox _chkUseSql;
+        private TextBox _txtCustomSql;
+        private Button _btnExecuteSql;
 
         // Таблицы
         private DataGridView _gridTeams, _gridPlayers, _gridTournaments, _gridResults;
@@ -15,7 +19,6 @@ namespace DesktopClient
         // Выпадающие списки (ComboBox) для вкладки результатов
         private ComboBox _cbTeams, _cbTournaments;
 
-        // Удалили _testTeamId и _testTourneyId, так как теперь мы берем реальные ID из базы
         private readonly Guid _cs2GameId = Guid.Parse("11111111-1111-1111-1111-000000000001");
 
         public Form1()
@@ -31,14 +34,55 @@ namespace DesktopClient
             this.Size = new Size(700, 550);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            _chkUseSql = new CheckBox { Text = "Использовать чистый SQL для всех запросов", Location = new Point(20, 10), Size = new Size(350, 25), Font = new Font("Segoe UI", 9, FontStyle.Bold) };
+            // --- ВЕРХНЯЯ ПАНЕЛЬ ДЛЯ SQL ---
+            _chkUseSql = new CheckBox { Text = "Встроенный SQL", Location = new Point(10, 10), Size = new Size(150, 25), Font = new Font("Segoe UI", 9, FontStyle.Bold) };
             _chkUseSql.CheckedChanged += (s, e) => LoadAllData();
             this.Controls.Add(_chkUseSql);
 
+            _txtCustomSql = new TextBox { Location = new Point(165, 10), Size = new Size(410, 25), PlaceholderText = "Введите произвольный SQL запрос..." };
+            this.Controls.Add(_txtCustomSql);
+
+            _btnExecuteSql = new Button { Text = "Выполнить", Location = new Point(585, 8), Size = new Size(85, 27) };
+            _btnExecuteSql.Click += async (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(_txtCustomSql.Text))
+                {
+                    MessageBox.Show("Сначала введите SQL запрос в поле!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var dataTable = await ApiClient.Instance.ExecuteRawSqlAsync(_txtCustomSql.Text);
+
+                if (dataTable != null)
+                {
+                    var resultForm = new Form
+                    {
+                        Text = "Результат выполнения SQL",
+                        Size = new Size(600, 400),
+                        StartPosition = FormStartPosition.CenterParent
+                    };
+
+                    var grid = new DataGridView
+                    {
+                        Dock = DockStyle.Fill,
+                        DataSource = dataTable,
+                        ReadOnly = true,
+                        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                        AllowUserToAddRows = false
+                    };
+
+                    resultForm.Controls.Add(grid);
+                    resultForm.ShowDialog();
+                }
+            };
+            this.Controls.Add(_btnExecuteSql);
+
+
+            // --- ВКЛАДКИ ---
             _tabControl = new TabControl { Location = new Point(10, 40), Size = new Size(660, 450) };
             this.Controls.Add(_tabControl);
 
-            // --- 1. Вкладка "Команды" ---
+            // 1. Вкладка "Команды"
             var tabTeams = new TabPage("Команды");
             var txtTeamName = new TextBox { Location = new Point(10, 10), Size = new Size(150, 25), PlaceholderText = "Название команды" };
             var btnAddTeam = new Button { Text = "Добавить", Location = new Point(170, 8), Size = new Size(80, 27) };
@@ -51,7 +95,7 @@ namespace DesktopClient
             tabTeams.Controls.AddRange(new Control[] { txtTeamName, btnAddTeam, _gridTeams });
             _tabControl.TabPages.Add(tabTeams);
 
-            // --- 2. Вкладка "Игроки" ---
+            // 2. Вкладка "Игроки"
             var tabPlayers = new TabPage("Игроки");
             var txtPlayerNick = new TextBox { Location = new Point(10, 10), Size = new Size(150, 25), PlaceholderText = "Никнейм" };
             var btnAddPlayer = new Button { Text = "Добавить", Location = new Point(170, 8), Size = new Size(80, 27) };
@@ -64,7 +108,7 @@ namespace DesktopClient
             tabPlayers.Controls.AddRange(new Control[] { txtPlayerNick, btnAddPlayer, _gridPlayers });
             _tabControl.TabPages.Add(tabPlayers);
 
-            // --- 3. Вкладка "Турниры" ---
+            // 3. Вкладка "Турниры"
             var tabTournaments = new TabPage("Турниры");
             var txtTourneyName = new TextBox { Location = new Point(10, 10), Size = new Size(150, 25), PlaceholderText = "Название турнира" };
             var txtMaxParts = new TextBox { Location = new Point(170, 10), Size = new Size(120, 25), PlaceholderText = "Макс. участников" };
@@ -78,10 +122,8 @@ namespace DesktopClient
             tabTournaments.Controls.AddRange(new Control[] { txtTourneyName, txtMaxParts, btnAddTourney, _gridTournaments });
             _tabControl.TabPages.Add(tabTournaments);
 
-            // --- 4. Вкладка "Результаты" ---
+            // 4. Вкладка "Результаты"
             var tabResults = new TabPage("Результаты");
-
-            // СОЗДАЕМ ВЫПАДАЮЩИЕ СПИСКИ ДЛЯ ВЫБОРА КОМАНДЫ И ТУРНИРА
             _cbTeams = new ComboBox { Location = new Point(10, 10), Size = new Size(150, 25), DropDownStyle = ComboBoxStyle.DropDownList };
             _cbTournaments = new ComboBox { Location = new Point(170, 10), Size = new Size(150, 25), DropDownStyle = ComboBoxStyle.DropDownList };
             var txtPrizeMoney = new TextBox { Location = new Point(330, 10), Size = new Size(100, 25), PlaceholderText = "Призовые (₽)" };
@@ -90,10 +132,8 @@ namespace DesktopClient
             _gridResults = new DataGridView { Location = new Point(10, 45), Size = new Size(630, 360), AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
 
             btnAddResult.Click += async (s, e) => {
-                // Проверяем, что введена сумма и выбраны реальные команда и турнир из списка
                 if (!int.TryParse(txtPrizeMoney.Text, out int prize) || _cbTeams.SelectedValue == null || _cbTournaments.SelectedValue == null) return;
 
-                // Получаем настоящие ID из базы данных
                 var realTeamId = (Guid)_cbTeams.SelectedValue;
                 var realTourneyId = (Guid)_cbTournaments.SelectedValue;
 
@@ -108,28 +148,25 @@ namespace DesktopClient
 
         private async void LoadAllData()
         {
-            // Скачиваем данные с сервера
             var teams = await ApiClient.Instance.GetTeamsAsync("", _chkUseSql.Checked);
             var players = await ApiClient.Instance.GetPlayersAsync("", _chkUseSql.Checked);
             var tournaments = await ApiClient.Instance.GetTournamentsAsync(_chkUseSql.Checked);
             var results = await ApiClient.Instance.GetResultsAsync(_chkUseSql.Checked);
 
-            // Обновляем таблицы
             _gridTeams.DataSource = teams;
             _gridPlayers.DataSource = players;
             _gridTournaments.DataSource = tournaments;
             _gridResults.DataSource = results;
 
-            // ЗАПОЛНЯЕМ ВЫПАДАЮЩИЕ СПИСКИ РЕАЛЬНЫМИ ДАННЫМИ ИЗ БАЗЫ
             _cbTeams.DataSource = teams;
-            _cbTeams.DisplayMember = "Name"; // То, что видит пользователь
-            _cbTeams.ValueMember = "Id";     // То, что отправляется на сервер
+            _cbTeams.DisplayMember = "Name";
+            _cbTeams.ValueMember = "Id";
 
             _cbTournaments.DataSource = tournaments;
             _cbTournaments.DisplayMember = "Name";
             _cbTournaments.ValueMember = "Id";
 
-            // Скрываем технические колонки ID для красоты
+            // Безопасное скрытие технических колонок ID
             if (_gridTeams.Columns["Id"] != null) _gridTeams.Columns["Id"].Visible = false;
             if (_gridPlayers.Columns["Id"] != null) _gridPlayers.Columns["Id"].Visible = false;
             if (_gridTournaments.Columns["Id"] != null) _gridTournaments.Columns["Id"].Visible = false;
