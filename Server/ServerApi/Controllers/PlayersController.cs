@@ -20,9 +20,10 @@ namespace ServerApi.Controllers
             List<Player> players;
             if (useSql)
             {
+                // ИСПРАВЛЕНО: player -> players
                 players = string.IsNullOrEmpty(search)
-                    ? await _context.Players.FromSqlRaw("SELECT * FROM player").ToListAsync()
-                    : await _context.Players.FromSqlRaw("SELECT * FROM player WHERE nickname ILIKE {0}", $"%{search}%").ToListAsync();
+                    ? await _context.Players.FromSqlRaw("SELECT * FROM players").ToListAsync()
+                    : await _context.Players.FromSqlRaw("SELECT * FROM players WHERE nickname ILIKE {0}", $"%{search}%").ToListAsync();
             }
             else
             {
@@ -41,8 +42,9 @@ namespace ServerApi.Controllers
 
             if (useSql)
             {
+                // ИСПРАВЛЕНО: player -> players
                 await _context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO player (id, nickname, first_name, last_name, phone, reg_date, date_of_birth) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
+                    "INSERT INTO players (id, nickname, first_name, last_name, phone, reg_date, date_of_birth) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
                     newId, dto.Nickname, dto.FirstName, dto.LastName, dto.Phone, regDate, dto.DateOfBirth);
             }
             else
@@ -52,14 +54,17 @@ namespace ServerApi.Controllers
                 _context.Players.Add(dto);
                 await _context.SaveChangesAsync();
             }
-            // Возвращаем правильный статус 201 Created
             return StatusCode(201, dto);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePlayer(Guid id, [FromQuery] bool useSql = false)
         {
-            if (useSql) await _context.Database.ExecuteSqlRawAsync("DELETE FROM player WHERE id = {0}", id);
+            if (useSql)
+            {
+                // ИСПРАВЛЕНО: player -> players
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM players WHERE id = {0}", id);
+            }
             else
             {
                 var player = await _context.Players.FindAsync(id);

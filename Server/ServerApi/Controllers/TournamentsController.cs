@@ -40,8 +40,8 @@ namespace ServerApi.Controllers
             if (useSql)
             {
                 await _context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO tournament (id, start_date, end_date, name, prizepool) VALUES ({0}, {1}, {2}, {3}, {4})",
-                    newId, dto.BeginDate, dto.EndDate, dto.Name, dto.Prizepool);
+                    "INSERT INTO tournament (id, name, start_time, end_time, max_participants) VALUES ({0}, {1}, {2}, {3}, {4})",
+                    newId, dto.Name, dto.StartTime, dto.EndTime, dto.MaxParticipants);
             }
             else
             {
@@ -52,15 +52,6 @@ namespace ServerApi.Controllers
             return StatusCode(201, dto);
         }
 
-        [HttpGet("results")]
-        public async Task<IActionResult> GetResults([FromQuery] bool useSql = false)
-        {
-            var results = useSql
-                ? await _context.MatchResults.FromSqlRaw("SELECT * FROM match_result").ToListAsync()
-                : await _context.MatchResults.ToListAsync();
-            return Ok(results);
-        }
-
         [HttpPost("results")]
         public async Task<IActionResult> RecordResult([FromBody] MatchResult dto, [FromQuery] bool useSql = false)
         {
@@ -68,8 +59,8 @@ namespace ServerApi.Controllers
             if (useSql)
             {
                 await _context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO match_result (id, team_id, match_id, place, points, prize_money) VALUES ({0}, {1}, {2}, {3}, {4}, {5})",
-                    newId, dto.TeamId, dto.MatchId, dto.Place, dto.Points, dto.PrizeMoney);
+                    "INSERT INTO match_result (id, winner_team, tournament_id, total_prize_money) VALUES ({0}, {1}, {2}, {3})",
+                    newId, dto.WinnerTeam, dto.TournamentId, dto.TotalPrizeMoney);
             }
             else
             {
