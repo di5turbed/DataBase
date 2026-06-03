@@ -5,4 +5,5 @@
   <Folder Name="/Server/">
     <Project Path="Server/ServerApi/ServerApi.csproj" />
   </Folder>
+  <Project Path="ServerApi.Tests/ServerApi.Tests.csproj" />
 </Solution>
