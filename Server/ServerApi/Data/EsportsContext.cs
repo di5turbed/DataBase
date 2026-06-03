@@ -5,32 +5,29 @@ namespace ServerApi.Data
 {
     public class EsportsContext : DbContext
     {
-        public DbSet<Player> Players { get; set; }
+        public EsportsContext(DbContextOptions<EsportsContext> options) : base(options) { }
+
+        // Зарегистрированные таблицы базы данных
+        public DbSet<User> Users { get; set; }
         public DbSet<Team> Teams { get; set; }
+        public DbSet<Player> Players { get; set; }
         public DbSet<TeamPlayer> TeamPlayers { get; set; }
 
-        public DbSet<User> Users { get; set; }
-
-        public EsportsContext(DbContextOptions<EsportsContext> options) : base(options) { }
+        // НОВЫЕ ТАБЛИЦЫ: Турниры и Результаты
+        public DbSet<Tournament> Tournaments { get; set; }
+        public DbSet<MatchResult> MatchResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Player>().ToTable("players");
-            modelBuilder.Entity<Team>().ToTable("team");
-            modelBuilder.Entity<TeamPlayer>().ToTable("team_player");
+            // Указываем точные названия таблиц в PostgreSQL (в нижнем регистре)
             modelBuilder.Entity<User>().ToTable("users");
+            modelBuilder.Entity<Team>().ToTable("team");
+            modelBuilder.Entity<Player>().ToTable("player");
+            modelBuilder.Entity<TeamPlayer>().ToTable("team_player");
 
-            modelBuilder.Entity<TeamPlayer>()
-                .HasOne(tp => tp.Team)
-                .WithMany(t => t.TeamPlayers)
-                .HasForeignKey(tp => tp.TeamId);
-
-            modelBuilder.Entity<TeamPlayer>()
-                .HasOne(tp => tp.Player)
-                .WithMany(p => p.TeamPlayers)
-                .HasForeignKey(tp => tp.PlayerId);
+            // ПРИВЯЗКА НОВЫХ ТАБЛИЦ:
+            modelBuilder.Entity<Tournament>().ToTable("tournament");
+            modelBuilder.Entity<MatchResult>().ToTable("match_result");
         }
     }
 }

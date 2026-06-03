@@ -17,6 +17,22 @@ namespace DesktopClient
         public string LastName { get; set; } = string.Empty;
     }
 
+    public class TournamentDto {
+        public Guid Id { get; set; } 
+        public string Name { get; set; } = ""; 
+        public DateTime BeginDate { get; set; } 
+        public DateTime EndDate { get; set; } 
+        public int Prizepool { get; set; } 
+    }
+    public class ResultDto { 
+        public Guid Id { get; set; } 
+        public string Result { get; set; } = ""; 
+        public int Kills { get; set; } 
+        public int Deaths { get; set; } 
+        public Guid MatchId { get; set; } 
+        public Guid TeamId { get; set; } 
+    }
+
     public class ApiClient
     {
         private static ApiClient? _instance;
@@ -33,6 +49,32 @@ namespace DesktopClient
 
         private readonly HttpClient _httpClient;
         private string? _authToken;
+
+        public async Task<List<TournamentDto>> GetTournamentsAsync(bool useSql = false)
+        {
+            try { return await _httpClient.GetFromJsonAsync<List<TournamentDto>>($"api/tournaments?useSql={useSql}") ?? new List<TournamentDto>(); }
+            catch { return new List<TournamentDto>(); }
+        }
+
+        public async Task<bool> CreateTournamentAsync(string name, int prizepool, bool useSql = false)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"api/tournaments?useSql={useSql}",
+                new { Name = name, BeginDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(7), Prizepool = prizepool });
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<List<ResultDto>> GetResultsAsync(bool useSql = false)
+        {
+            try { return await _httpClient.GetFromJsonAsync<List<ResultDto>>($"api/tournaments/results?useSql={useSql}") ?? new List<ResultDto>(); }
+            catch { return new List<ResultDto>(); }
+        }
+
+        public async Task<bool> RecordResultAsync(string result, int kills, int deaths, Guid matchId, Guid teamId, bool useSql = false)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"api/tournaments/results?useSql={useSql}",
+                new { Result = result, Kills = kills, Deaths = deaths, MatchId = matchId, TeamId = teamId });
+            return response.IsSuccessStatusCode;
+        }
 
         private ApiClient()
         {
