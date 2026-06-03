@@ -19,15 +19,17 @@ namespace ServerApi.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Указываем точные названия таблиц в PostgreSQL (в нижнем регистре)
-            modelBuilder.Entity<User>().ToTable("users");
-            modelBuilder.Entity<Team>().ToTable("team");
-            modelBuilder.Entity<Player>().ToTable("players");
-            modelBuilder.Entity<TeamPlayer>().ToTable("team_player");
+            base.OnModelCreating(modelBuilder);
 
-            // ПРИВЯЗКА НОВЫХ ТАБЛИЦ:
-            modelBuilder.Entity<Tournament>().ToTable("tournament");
-            modelBuilder.Entity<MatchResult>().ToTable("match_result");
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                entity.SetTableName(entity.GetTableName()?.ToLower());
+
+                foreach (var property in entity.GetProperties())
+                {
+                    property.SetColumnName(property.GetColumnName().ToLower());
+                }
+            }
         }
     }
 }
