@@ -22,7 +22,7 @@ namespace ServerApi.Data
             // Указываем точные названия таблиц в PostgreSQL (в нижнем регистре)
             modelBuilder.Entity<User>().ToTable("users");
             modelBuilder.Entity<Team>().ToTable("team");
-            modelBuilder.Entity<Player>().ToTable("player");
+            modelBuilder.Entity<Player>().ToTable("players");
             modelBuilder.Entity<TeamPlayer>().ToTable("team_player");
 
             // ПРИВЯЗКА НОВЫХ ТАБЛИЦ:

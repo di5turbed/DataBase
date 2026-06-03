@@ -68,8 +68,8 @@ namespace ServerApi.Controllers
             if (useSql)
             {
                 await _context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO match_result (id, result, kills, deaths, match_id, team_id) VALUES ({0}, {1}, {2}, {3}, {4}, {5})",
-                    newId, dto.Result, dto.Kills, dto.Deaths, dto.MatchId, dto.TeamId);
+                    "INSERT INTO match_result (id, team_id, match_id, place, points, prize_money) VALUES ({0}, {1}, {2}, {3}, {4}, {5})",
+                    newId, dto.TeamId, dto.MatchId, dto.Place, dto.Points, dto.PrizeMoney);
             }
             else
             {

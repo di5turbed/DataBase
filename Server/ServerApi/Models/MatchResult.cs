@@ -8,19 +8,19 @@ namespace ServerApi.Models
         [Column("id")]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Column("result")]
-        public string Result { get; set; } = string.Empty;
-
-        [Column("kills")]
-        public int Kills { get; set; }
-
-        [Column("deaths")]
-        public int Deaths { get; set; }
+        [Column("team_id")]
+        public Guid TeamId { get; set; }
 
         [Column("match_id")]
         public Guid MatchId { get; set; }
 
-        [Column("team_id")]
-        public Guid TeamId { get; set; }
+        [Column("place")]
+        public int Place { get; set; }
+
+        [Column("points")]
+        public int Points { get; set; }
+
+        [Column("prize_money")]
+        public int PrizeMoney { get; set; }
     }
 }

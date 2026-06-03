@@ -43,7 +43,8 @@ namespace DesktopClient
             var btnAddTeam = new Button { Text = "Добавить", Location = new Point(170, 8), Size = new Size(80, 27) };
             _gridTeams = new DataGridView { Location = new Point(10, 45), Size = new Size(630, 360), AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
 
-            btnAddTeam.Click += async (s, e) => {
+            btnAddTeam.Click += async (s, e) =>
+            {
                 if (string.IsNullOrWhiteSpace(txtTeamName.Text)) return;
                 if (await ApiClient.Instance.CreateTeamAsync(txtTeamName.Text, _cs2GameId, _chkUseSql.Checked)) { txtTeamName.Clear(); LoadAllData(); }
             };
@@ -56,7 +57,8 @@ namespace DesktopClient
             var btnAddPlayer = new Button { Text = "Добавить", Location = new Point(170, 8), Size = new Size(80, 27) };
             _gridPlayers = new DataGridView { Location = new Point(10, 45), Size = new Size(630, 360), AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
 
-            btnAddPlayer.Click += async (s, e) => {
+            btnAddPlayer.Click += async (s, e) =>
+            {
                 if (string.IsNullOrWhiteSpace(txtPlayerNick.Text)) return;
                 if (await ApiClient.Instance.CreatePlayerAsync(txtPlayerNick.Text, "Имя", "Фамилия", _chkUseSql.Checked)) { txtPlayerNick.Clear(); LoadAllData(); }
             };
@@ -70,7 +72,8 @@ namespace DesktopClient
             var btnAddTourney = new Button { Text = "Создать", Location = new Point(280, 8), Size = new Size(80, 27) };
             _gridTournaments = new DataGridView { Location = new Point(10, 45), Size = new Size(630, 360), AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
 
-            btnAddTourney.Click += async (s, e) => {
+            btnAddTourney.Click += async (s, e) =>
+            {
                 if (string.IsNullOrWhiteSpace(txtTourneyName.Text) || !int.TryParse(txtPrizepool.Text, out int prize)) return;
                 if (await ApiClient.Instance.CreateTournamentAsync(txtTourneyName.Text, prize, _chkUseSql.Checked)) { txtTourneyName.Clear(); txtPrizepool.Clear(); LoadAllData(); }
             };
@@ -79,20 +82,23 @@ namespace DesktopClient
 
             // --- 4. Вкладка "Результаты" ---
             var tabResults = new TabPage("Результаты");
-            var txtResult = new TextBox { Location = new Point(10, 10), Size = new Size(100, 25), PlaceholderText = "Исход (Win/Loss)" };
-            var txtKills = new TextBox { Location = new Point(120, 10), Size = new Size(60, 25), PlaceholderText = "Убийств" };
-            var txtDeaths = new TextBox { Location = new Point(190, 10), Size = new Size(60, 25), PlaceholderText = "Смертей" };
-            var btnAddResult = new Button { Text = "Фиксировать", Location = new Point(260, 8), Size = new Size(100, 27) };
+            var txtPlace = new TextBox { Location = new Point(10, 10), Size = new Size(60, 25), PlaceholderText = "Место" };
+            var txtPoints = new TextBox { Location = new Point(80, 10), Size = new Size(70, 25), PlaceholderText = "Очки" };
+            var txtPrize = new TextBox { Location = new Point(160, 10), Size = new Size(80, 25), PlaceholderText = "Призовые" };
+            var btnAddResult = new Button { Text = "Фиксировать", Location = new Point(250, 8), Size = new Size(100, 27) };
             _gridResults = new DataGridView { Location = new Point(10, 45), Size = new Size(630, 360), AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
 
-            btnAddResult.Click += async (s, e) => {
-                if (string.IsNullOrWhiteSpace(txtResult.Text) || !int.TryParse(txtKills.Text, out int kills) || !int.TryParse(txtDeaths.Text, out int deaths)) return;
-                if (await ApiClient.Instance.RecordResultAsync(txtResult.Text, kills, deaths, _testMatchId, _testTeamId, _chkUseSql.Checked))
+            btnAddResult.Click += async (s, e) =>
+            {
+                // Проверяем, что введены именно числа
+                if (!int.TryParse(txtPlace.Text, out int place) || !int.TryParse(txtPoints.Text, out int points) || !int.TryParse(txtPrize.Text, out int prize)) return;
+
+                if (await ApiClient.Instance.RecordResultAsync(place, points, prize, _testMatchId, _testTeamId, _chkUseSql.Checked))
                 {
-                    txtResult.Clear(); txtKills.Clear(); txtDeaths.Clear(); LoadAllData();
+                    txtPlace.Clear(); txtPoints.Clear(); txtPrize.Clear(); LoadAllData();
                 }
             };
-            tabResults.Controls.AddRange(new Control[] { txtResult, txtKills, txtDeaths, btnAddResult, _gridResults });
+            tabResults.Controls.AddRange(new Control[] { txtPlace, txtPoints, txtPrize, btnAddResult, _gridResults });
             _tabControl.TabPages.Add(tabResults);
         }
 

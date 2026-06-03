@@ -24,13 +24,14 @@ namespace DesktopClient
         public DateTime EndDate { get; set; } 
         public int Prizepool { get; set; } 
     }
-    public class ResultDto { 
-        public Guid Id { get; set; } 
-        public string Result { get; set; } = ""; 
-        public int Kills { get; set; } 
-        public int Deaths { get; set; } 
-        public Guid MatchId { get; set; } 
-        public Guid TeamId { get; set; } 
+    public class ResultDto
+    {   
+        public Guid Id { get; set; }
+        public Guid TeamId { get; set; }
+        public Guid MatchId { get; set; }
+        public int Place { get; set; }
+        public int Points { get; set; }
+        public int PrizeMoney { get; set; }
     }
 
     public class ApiClient
@@ -69,10 +70,10 @@ namespace DesktopClient
             catch { return new List<ResultDto>(); }
         }
 
-        public async Task<bool> RecordResultAsync(string result, int kills, int deaths, Guid matchId, Guid teamId, bool useSql = false)
+        public async Task<bool> RecordResultAsync(int place, int points, int prizeMoney, Guid matchId, Guid teamId, bool useSql = false)
         {
             var response = await _httpClient.PostAsJsonAsync($"api/tournaments/results?useSql={useSql}",
-                new { Result = result, Kills = kills, Deaths = deaths, MatchId = matchId, TeamId = teamId });
+                new { Place = place, Points = points, PrizeMoney = prizeMoney, MatchId = matchId, TeamId = teamId });
             return response.IsSuccessStatusCode;
         }
 
