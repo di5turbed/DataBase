@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServerApi.Data;
-using ServerApi.DTOs;
 using ServerApi.Models;
 
 namespace ServerApi.Controllers
@@ -21,10 +20,9 @@ namespace ServerApi.Controllers
             List<Player> players;
             if (useSql)
             {
-                if (string.IsNullOrEmpty(search))
-                    players = await _context.Players.FromSqlRaw("SELECT * FROM players").ToListAsync();
-                else
-                    players = await _context.Players.FromSqlRaw("SELECT * FROM players WHERE nickname ILIKE {0}", $"%{search}%").ToListAsync();
+                players = string.IsNullOrEmpty(search)
+                    ? await _context.Players.FromSqlRaw("SELECT * FROM player").ToListAsync()
+                    : await _context.Players.FromSqlRaw("SELECT * FROM player WHERE nickname ILIKE {0}", $"%{search}%").ToListAsync();
             }
             else
             {
@@ -32,34 +30,42 @@ namespace ServerApi.Controllers
                 if (!string.IsNullOrEmpty(search)) query = query.Where(p => p.Nickname.ToLower().Contains(search.ToLower()));
                 players = await query.ToListAsync();
             }
-            return Ok(players.Select(p => new PlayerDto { Id = p.Id, Nickname = p.Nickname, FirstName = p.FirstName, LastName = p.LastName }));
+            return Ok(players);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePlayer([FromBody] PlayerCreateDto dto, [FromQuery] bool useSql = false)
+        public async Task<IActionResult> CreatePlayer([FromBody] Player dto, [FromQuery] bool useSql = false)
         {
+            var newId = Guid.NewGuid();
+            var regDate = DateTime.UtcNow;
+
             if (useSql)
             {
                 await _context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO players (id, nickname, first_name, last_name, phone, reg_date, date_of_birth) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
-                    Guid.NewGuid(), dto.Nickname, dto.FirstName, dto.LastName, dto.Phone, DateTime.UtcNow, dto.DateOfBirth);
+                    "INSERT INTO player (id, nickname, first_name, last_name, phone, reg_date, date_of_birth) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
+                    newId, dto.Nickname, dto.FirstName, dto.LastName, dto.Phone, regDate, dto.DateOfBirth);
             }
             else
             {
-                _context.Players.Add(new Player { Nickname = dto.Nickname, FirstName = dto.FirstName, LastName = dto.LastName, Phone = dto.Phone, RegDate = DateTime.UtcNow, DateOfBirth = dto.DateOfBirth });
+                dto.Id = newId;
+                dto.RegDate = regDate;
+                _context.Players.Add(dto);
                 await _context.SaveChangesAsync();
             }
-            return Ok();
+            // Возвращаем правильный статус 201 Created
+            return StatusCode(201, dto);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePlayer(Guid id, [FromQuery] bool useSql = false)
         {
-            if (useSql) await _context.Database.ExecuteSqlRawAsync("DELETE FROM players WHERE id = {0}", id);
+            if (useSql) await _context.Database.ExecuteSqlRawAsync("DELETE FROM player WHERE id = {0}", id);
             else
             {
                 var player = await _context.Players.FindAsync(id);
-                if (player != null) { _context.Players.Remove(player); await _context.SaveChangesAsync(); }
+                if (player == null) return NotFound("Игрок не найден");
+                _context.Players.Remove(player);
+                await _context.SaveChangesAsync();
             }
             return Ok();
         }

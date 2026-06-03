@@ -8,7 +8,7 @@ namespace ServerApi.Models
         [Column("id")]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Column("begin_date")]
+        [Column("start_date")]
         public DateTime BeginDate { get; set; }
 
         [Column("end_date")]
